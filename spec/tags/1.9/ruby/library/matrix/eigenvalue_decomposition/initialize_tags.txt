@@ -1,1 +1,1 @@
-fails(hang):Matrix::EigenvalueDecomposition#initialize never hangs
+critical(hang):Matrix::EigenvalueDecomposition#initialize never hangs
