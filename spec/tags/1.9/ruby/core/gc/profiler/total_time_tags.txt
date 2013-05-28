@@ -1,0 +1,1 @@
+fails(travis):GC::Profiler.total_time returns an float
