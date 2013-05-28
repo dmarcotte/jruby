@@ -40,3 +40,5 @@ fails(only in rake run?):Kernel#spawn returns the process ID of the new process 
 fails:Process.spawn returns the process ID of the new process as a Fixnum
 fails(gh-631):Process.spawn with a single argument creates an argument array with shell parsing semantics for whitespace
 fails(gh-631):Process.spawn with multiple arguments preserves whitespace in passed arguments
+fails(travis,intermittent):Process.spawn with a command array does not subject the arguments to shell expansion
+fails(travis,intermittent):Process.spawn with a single argument calls #to_str to convert the argument to a String
