@@ -28,7 +28,22 @@
 
 package org.jruby.util;
 
-import static java.lang.System.out;
+import jnr.posix.util.FieldAccess;
+import jnr.posix.util.Platform;
+import org.jruby.Main;
+import org.jruby.Ruby;
+import org.jruby.RubyArray;
+import org.jruby.RubyHash;
+import org.jruby.RubyIO;
+import org.jruby.RubyInstanceConfig;
+import org.jruby.RubyModule;
+import org.jruby.RubyString;
+import org.jruby.ext.rbconfig.RbConfigLibrary;
+import org.jruby.runtime.Helpers;
+import org.jruby.runtime.ThreadContext;
+import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.util.io.IOOptions;
+import org.jruby.util.io.ModeFlags;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -52,22 +67,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jruby.Main;
-import org.jruby.Ruby;
-import org.jruby.RubyArray;
-import org.jruby.RubyHash;
-import org.jruby.RubyIO;
-import org.jruby.RubyInstanceConfig;
-import org.jruby.RubyModule;
-import org.jruby.RubyString;
-import jnr.posix.util.FieldAccess;
-import jnr.posix.util.Platform;
-import org.jruby.runtime.Helpers;
-import org.jruby.ext.rbconfig.RbConfigLibrary;
-import org.jruby.runtime.ThreadContext;
-import org.jruby.runtime.builtin.IRubyObject;
-import org.jruby.util.io.IOOptions;
-import org.jruby.util.io.ModeFlags;
+import static java.lang.System.out;
 
 /**
  * This mess of a class is what happens when all Java gives you is
@@ -1392,7 +1392,13 @@ public class ShellLauncher {
                     out.write(buf, 0, numRead);
                 }
             } catch (Exception e) {
+                throw new RuntimeException(e);
             } finally {
+                try {
+                    out.flush();
+                } catch (IOException e) {
+                    throw new RuntimeException("DM TODO DIED ON FLUSH");
+                }
                 if (onlyIfAvailable) {
                     synchronized (sync) {
                         // We need to close the out, since some
