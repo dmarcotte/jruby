@@ -17,7 +17,7 @@ env:
     - TARGET='spec:ci_interpreted_via_env' RUBYSPEC_LANG_VER='1.9'
 
 script: "ant $TARGET"
-install: /bin/true
+install: /bin/true #test
 notifications:
   irc:
     channels:
