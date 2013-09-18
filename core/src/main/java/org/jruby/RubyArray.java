@@ -1610,7 +1610,7 @@ public class RubyArray extends RubyObject implements List, RandomAccess {
 
     @JRubyMethod
     public IRubyObject each(ThreadContext context, Block block) {
-        return block.isGiven() ? eachCommon(context, block) : enumeratorize(context.runtime, this, "each");
+        return block.isGiven() ? eachCommon(context, block) : enumeratorize(context.runtime, this, "each", realLength);
     }
 
     public IRubyObject eachSlice(ThreadContext context, int size, Block block) {

@@ -1891,27 +1891,27 @@ public class RubyKernel {
     }
     
     @JRubyMethod(name = {"to_enum", "enum_for"})
-    public static IRubyObject obj_to_enum(ThreadContext context, IRubyObject self) {
-        return RubyEnumerator.newEnumerator(context, self);
+    public static IRubyObject obj_to_enum(ThreadContext context, IRubyObject self, Block block) {
+        return Helpers.invoke(context, context.runtime.getEnumerator(), "new", self, block);
     }
 
     @JRubyMethod(name = {"to_enum", "enum_for"})
-    public static IRubyObject obj_to_enum(ThreadContext context, IRubyObject self, IRubyObject arg) {
-        return RubyEnumerator.newEnumerator(context, self, arg);
+    public static IRubyObject obj_to_enum(ThreadContext context, IRubyObject self, IRubyObject arg, Block block) {
+        return Helpers.invoke(context, context.runtime.getEnumerator(), "new", self, arg, block);
     }
 
     @JRubyMethod(name = {"to_enum", "enum_for"})
-    public static IRubyObject obj_to_enum(ThreadContext context, IRubyObject self, IRubyObject arg0, IRubyObject arg1) {
-        return RubyEnumerator.newEnumerator(context, self, arg0, arg1);
+    public static IRubyObject obj_to_enum(ThreadContext context, IRubyObject self, IRubyObject arg0, IRubyObject arg1, Block block) {
+        return Helpers.invoke(context, context.runtime.getEnumerator(), "new", self, arg0, arg1, block);
     }
 
     @JRubyMethod(name = {"to_enum", "enum_for"}, optional = 1, rest = true)
-    public static IRubyObject obj_to_enum(ThreadContext context, IRubyObject self, IRubyObject[] args) {
+    public static IRubyObject obj_to_enum(ThreadContext context, IRubyObject self, IRubyObject[] args, Block block) {
         IRubyObject[] newArgs = new IRubyObject[args.length + 1];
         newArgs[0] = self;
         System.arraycopy(args, 0, newArgs, 1, args.length);
 
-        return context.runtime.getEnumerator().callMethod(context, "new", newArgs);
+        return context.runtime.getEnumerator().callMethod(context, "new", newArgs, block);
     }
 
     @JRubyMethod(name = { "__method__", "__callee__" }, module = true, visibility = PRIVATE, reads = METHODNAME, omit = true)

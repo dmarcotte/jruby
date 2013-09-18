@@ -96,9 +96,24 @@ public class RubyEnumerator extends RubyObject {
         initialize(runtime.getNil(), RubyString.newEmptyString(runtime), IRubyObject.NULL_ARRAY);
     }
 
+    // dm todo delete this?
+    private RubyEnumerator(Ruby runtime, RubyClass type, IRubyObject object, IRubyObject method, IRubyObject[]args, Block sizeBlock) {
+        super(runtime, type);
+        initialize20(object, method, args, sizeBlock.getProcObject());
+    }
+
+    private RubyEnumerator(Ruby runtime, RubyClass type, IRubyObject object, IRubyObject method, IRubyObject[]args, int size) {
+        super(runtime, type);
+        initialize20(object, method, args, new RubyFixnum(runtime, size));
+    }
+
     private RubyEnumerator(Ruby runtime, RubyClass type, IRubyObject object, IRubyObject method, IRubyObject[]args) {
         super(runtime, type);
         initialize(object, method, args);
+    }
+
+    public static IRubyObject enumeratorize(Ruby runtime, IRubyObject object, String method, int size) {
+        return new RubyEnumerator(runtime, runtime.getEnumerator(), object, runtime.fastNewSymbol(method), IRubyObject.NULL_ARRAY, size);
     }
 
     public static IRubyObject enumeratorize(Ruby runtime, IRubyObject object, String method) {
@@ -162,12 +177,17 @@ public class RubyEnumerator extends RubyObject {
         RubySymbol each = runtime.newSymbol("each");
         
         // check for size
+        // dm todo validate this against the logic at enumerator.c:333
         if ((object.isNil() || runtime.getProc().isInstance(object)) ||
-                runtime.getFloat().isInstance(object) && ((RubyFloat)object).getDoubleValue() == Float.POSITIVE_INFINITY) {
-            // object is nil, a proc, or infinity; use it for size
+                object instanceof RubyInteger ||
+                (runtime.getFloat().isInstance(object) && ((RubyFloat)object).getDoubleValue() == Float.POSITIVE_INFINITY)) {
+            // object is nil, a proc, an integer, or infinity; use it for size
             IRubyObject gen = context.runtime.getModule("JRuby").getClass("Generator").callMethod(context, "new", new IRubyObject[0], block);
             return initialize20(gen, each, NULL_ARRAY, object);
+        } else if (!object.respondsTo("each")) {
+            throw runtime.newTypeError(object, runtime.getInteger());
         }
+
         return initialize(object, each, NULL_ARRAY);
     }
 
@@ -229,7 +249,9 @@ public class RubyEnumerator extends RubyObject {
 
     @JRubyMethod(name = "initialize", rest = true, visibility = PRIVATE, compat = RUBY2_0)
     public IRubyObject initialize20(ThreadContext context, IRubyObject[] args, Block block) {
-        return initialize19(context, args, block);
+        RubySymbol each = context.runtime.newSymbol("each");
+        IRubyObject gen = context.runtime.getModule("JRuby").getClass("Generator").callMethod(context, "new", new IRubyObject[0], block);
+        return initialize20(gen, each, args, block.getProcObject());
     }
 
     private IRubyObject initialize(IRubyObject object, IRubyObject method, IRubyObject[] methodArgs) {
