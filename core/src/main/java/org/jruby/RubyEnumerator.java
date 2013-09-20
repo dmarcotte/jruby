@@ -177,6 +177,7 @@ public class RubyEnumerator extends RubyObject {
         }
     }
 
+    // dm todo the rules we need to apply here differ between object based inits and direct Enum news
     @JRubyMethod(name = "initialize", visibility = PRIVATE, compat = RUBY2_0, rest = true)
     public IRubyObject initialize20(ThreadContext context, IRubyObject[] args, Block block) {
         Ruby runtime = context.runtime;
@@ -191,8 +192,6 @@ public class RubyEnumerator extends RubyObject {
                 size = RubyProc.newProc(runtime, block, block.type);
             }
 
-            // dm todo warn of deprecation of no-block Enum.new
-
             object = args[0];
             args = Arrays.copyOfRange(args, 1, args.length);
             if (args.length > 0) {
@@ -203,6 +202,7 @@ public class RubyEnumerator extends RubyObject {
             // else new(size = nil) { |yielder| ... } constructor
             if (args.length > 0) {
                 size = args[0];
+                args = Arrays.copyOfRange(args, 1, args.length);
 
                 if (!(size.isNil() || runtime.getProc().isInstance(size)) &&
                         !(runtime.getFloat().isInstance(size) && ((RubyFloat)size).getDoubleValue() == Float.POSITIVE_INFINITY) &&
