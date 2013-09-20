@@ -52,11 +52,11 @@ import org.jruby.exceptions.RaiseException;
 import org.jruby.internal.runtime.methods.CallConfiguration;
 import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.internal.runtime.methods.JavaMethod.JavaMethodNBlock;
-import org.jruby.runtime.Helpers;
 import org.jruby.platform.Platform;
 import org.jruby.runtime.Binding;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.CallType;
+import org.jruby.runtime.Helpers;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.Visibility;
 import org.jruby.runtime.backtrace.RubyStackTraceElement;
@@ -71,7 +71,6 @@ import org.jruby.util.cli.Options;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
@@ -79,7 +78,6 @@ import java.util.Map;
 import static org.jruby.CompatVersion.RUBY1_8;
 import static org.jruby.CompatVersion.RUBY1_9;
 import static org.jruby.CompatVersion.RUBY2_0;
-import org.jruby.anno.FrameField;
 import static org.jruby.anno.FrameField.BACKREF;
 import static org.jruby.anno.FrameField.BLOCK;
 import static org.jruby.anno.FrameField.FILENAME;
@@ -88,7 +86,6 @@ import static org.jruby.anno.FrameField.METHODNAME;
 import static org.jruby.runtime.Visibility.PRIVATE;
 import static org.jruby.runtime.Visibility.PROTECTED;
 import static org.jruby.runtime.Visibility.PUBLIC;
-import org.jruby.runtime.backtrace.TraceType;
 
 /**
  * Note: For CVS history, see KernelModule.java.
@@ -1897,12 +1894,12 @@ public class RubyKernel {
 
     @JRubyMethod(name = {"to_enum", "enum_for"})
     public static IRubyObject obj_to_enum(ThreadContext context, IRubyObject self, IRubyObject arg, Block block) {
-        return Helpers.invoke(context, context.runtime.getEnumerator(), "new", self, arg, block);
+        return Helpers.invoke(context, context.runtime.getEnumerator(), "new", new IRubyObject[] { self, arg }, block);
     }
 
     @JRubyMethod(name = {"to_enum", "enum_for"})
     public static IRubyObject obj_to_enum(ThreadContext context, IRubyObject self, IRubyObject arg0, IRubyObject arg1, Block block) {
-        return Helpers.invoke(context, context.runtime.getEnumerator(), "new", self, arg0, arg1, block);
+        return Helpers.invoke(context, context.runtime.getEnumerator(), "new", new IRubyObject[] { self, arg0, arg1 }, block);
     }
 
     @JRubyMethod(name = {"to_enum", "enum_for"}, optional = 1, rest = true)
