@@ -1887,28 +1887,48 @@ public class RubyKernel {
         return recv;
     }
     
-    @JRubyMethod(name = {"to_enum", "enum_for"})
+    @JRubyMethod(name = {"to_enum", "enum_for"}, compat = CompatVersion.BOTH)
     public static IRubyObject obj_to_enum(ThreadContext context, IRubyObject self, Block block) {
         return Helpers.invoke(context, context.runtime.getEnumerator(), "new", self, block);
     }
 
-    @JRubyMethod(name = {"to_enum", "enum_for"})
+    @JRubyMethod(name = {"to_enum", "enum_for"}, compat = CompatVersion.BOTH)
     public static IRubyObject obj_to_enum(ThreadContext context, IRubyObject self, IRubyObject arg, Block block) {
         return Helpers.invoke(context, context.runtime.getEnumerator(), "new", new IRubyObject[] { self, arg }, block);
     }
 
-    @JRubyMethod(name = {"to_enum", "enum_for"})
+    @JRubyMethod(name = {"to_enum", "enum_for"}, compat = CompatVersion.BOTH)
     public static IRubyObject obj_to_enum(ThreadContext context, IRubyObject self, IRubyObject arg0, IRubyObject arg1, Block block) {
         return Helpers.invoke(context, context.runtime.getEnumerator(), "new", new IRubyObject[] { self, arg0, arg1 }, block);
     }
 
-    @JRubyMethod(name = {"to_enum", "enum_for"}, optional = 1, rest = true)
+    @JRubyMethod(name = {"to_enum", "enum_for"}, optional = 1, rest = true, compat = CompatVersion.BOTH)
     public static IRubyObject obj_to_enum(ThreadContext context, IRubyObject self, IRubyObject[] args, Block block) {
         IRubyObject[] newArgs = new IRubyObject[args.length + 1];
         newArgs[0] = self;
         System.arraycopy(args, 0, newArgs, 1, args.length);
 
         return context.runtime.getEnumerator().callMethod(context, "new", newArgs, block);
+    }
+
+    @JRubyMethod(name = {"to_enum", "enum_for"}, optional = 1, rest = true, compat = CompatVersion.RUBY2_0)
+    public static IRubyObject obj_to_enum20(ThreadContext context, IRubyObject self, IRubyObject[] args, Block block) {
+        Ruby runtime = context.runtime;
+        String method = "each";
+        IRubyObject size = null;
+
+        if (args.length > 0) {
+            method = args[0].asJavaString();
+            IRubyObject[] newArgs = new IRubyObject[args.length - 1];
+            System.arraycopy(args, 1, newArgs, 0, newArgs.length);
+            args = newArgs;
+        }
+
+        if (block.isGiven()) {
+            size = RubyProc.newProc(runtime, block, block.type);
+        }
+
+        return RubyEnumerator.enumeratorizeWithSize(runtime, self, method, args, size);
     }
 
     @JRubyMethod(name = { "__method__", "__callee__" }, module = true, visibility = PRIVATE, reads = METHODNAME, omit = true)

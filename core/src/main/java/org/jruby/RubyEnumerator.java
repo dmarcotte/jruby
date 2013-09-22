@@ -103,9 +103,9 @@ public class RubyEnumerator extends RubyObject {
         initialize20(object, method, args, sizeBlock.getProcObject());
     }
 
-    private RubyEnumerator(Ruby runtime, RubyClass type, IRubyObject object, IRubyObject method, IRubyObject[]args, int size) {
+    private RubyEnumerator(Ruby runtime, RubyClass type, IRubyObject object, IRubyObject method, IRubyObject[]args, IRubyObject size) {
         super(runtime, type);
-        initialize20(object, method, args, new RubyFixnum(runtime, size));
+        initialize20(object, method, args, size);
     }
 
     private RubyEnumerator(Ruby runtime, RubyClass type, IRubyObject object, IRubyObject method, IRubyObject[]args) {
@@ -113,8 +113,13 @@ public class RubyEnumerator extends RubyObject {
         initialize(object, method, args);
     }
 
-    public static IRubyObject enumeratorize(Ruby runtime, IRubyObject object, String method, int size) {
-        return new RubyEnumerator(runtime, runtime.getEnumerator(), object, runtime.fastNewSymbol(method), IRubyObject.NULL_ARRAY, size);
+    // dm todo delete?
+    public static IRubyObject enumeratorizeWithSize(Ruby runtime, IRubyObject object, String method, int size) {
+        return new RubyEnumerator(runtime, runtime.getEnumerator(), object, runtime.fastNewSymbol(method), IRubyObject.NULL_ARRAY, new RubyFixnum(runtime, size));
+    }
+
+    public static IRubyObject enumeratorizeWithSize(Ruby runtime, IRubyObject object, String method, IRubyObject[] args, IRubyObject size) {
+        return new RubyEnumerator(runtime, runtime.getEnumerator(), object, runtime.fastNewSymbol(method), args, size);
     }
 
     public static IRubyObject enumeratorize(Ruby runtime, IRubyObject object, String method) {
@@ -167,17 +172,6 @@ public class RubyEnumerator extends RubyObject {
         return initialize(object, context.runtime.fastNewSymbol("each"), NULL_ARRAY);
     }
 
-    @JRubyMethod(name = "initialize", visibility = PRIVATE, compat = RUBY2_0)
-    public IRubyObject initialize20(ThreadContext context, IRubyObject object, Block block) {
-        // dm todo doc this switch: if we've got a block, we need to interpret the single arg as a size, otherwise it's our object
-        if (block.isGiven()) {
-            return initialize20(context, new IRubyObject[] { object }, block);
-        } else {
-            return initialize20(context, new IRubyObject[] {object, context.runtime.fastNewSymbol("each")}, block);
-        }
-    }
-
-    // dm todo the rules we need to apply here differ between object based inits and direct Enum news
     @JRubyMethod(name = "initialize", visibility = PRIVATE, compat = RUBY2_0, rest = true)
     public IRubyObject initialize20(ThreadContext context, IRubyObject[] args, Block block) {
         Ruby runtime = context.runtime;
@@ -185,21 +179,8 @@ public class RubyEnumerator extends RubyObject {
         IRubyObject method = context.runtime.newSymbol("each");
         IRubyObject size = null;
 
-        if (args.length > 1) {
-            // must be the new(obj, method = :each, *args) constructor
-            if (block.isGiven()) {
-                // dm todo this should actually be an arity error when this is an enum.new
-                size = RubyProc.newProc(runtime, block, block.type);
-            }
-
-            object = args[0];
-            args = Arrays.copyOfRange(args, 1, args.length);
-            if (args.length > 0) {
-                method = args[0];
-                args = Arrays.copyOfRange(args, 1, args.length);
-            }
-        } else {
-            // else new(size = nil) { |yielder| ... } constructor
+        if (block.isGiven()) {
+            Arity.checkArgumentCount(runtime, args, 0, 1);
             if (args.length > 0) {
                 size = args[0];
                 args = Arrays.copyOfRange(args, 1, args.length);
@@ -212,6 +193,15 @@ public class RubyEnumerator extends RubyObject {
             }
 
             object = context.runtime.getModule("JRuby").getClass("Generator").callMethod(context, "new", new IRubyObject[0], block);
+        } else {
+            Arity.checkArgumentCount(runtime, args, 1, Integer.MAX_VALUE); // dm todo is this idiomatic?
+            // dm todo deprecation warn if we can delete the backports
+            object = args[0];
+            args = Arrays.copyOfRange(args, 1, args.length);
+            if (args.length > 0) {
+                method = args[0];
+                args = Arrays.copyOfRange(args, 1, args.length);
+            }
         }
 
         return initialize20(object, method, args, size);
@@ -245,7 +235,7 @@ public class RubyEnumerator extends RubyObject {
 
     @JRubyMethod(name = "initialize", visibility = PRIVATE, compat = RUBY1_9)
     public IRubyObject initialize19(ThreadContext context, IRubyObject object, IRubyObject method, IRubyObject methodArg, Block block) {
-        return initialize(object, method, new IRubyObject[] { methodArg });
+        return initialize(object, method, new IRubyObject[]{methodArg});
     }
 
     @JRubyMethod(name = "initialize", rest = true, visibility = PRIVATE, compat = RUBY1_8)
