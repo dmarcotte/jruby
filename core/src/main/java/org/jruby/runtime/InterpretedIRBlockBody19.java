@@ -102,7 +102,7 @@ public class InterpretedIRBlockBody19 extends InterpretedIRBlockBody {
     }
 
     @Override
-    public IRubyObject yield(ThreadContext context, IRubyObject value, Binding binding, Type type) {
+    protected IRubyObject doYield(ThreadContext context, IRubyObject value, Binding binding, Type type) {
         IRubyObject[] args;
         if (type == Block.Type.LAMBDA) {
             args = new IRubyObject[] { value };
@@ -123,7 +123,7 @@ public class InterpretedIRBlockBody19 extends InterpretedIRBlockBody {
     }
 
     @Override
-    public IRubyObject yield(ThreadContext context, IRubyObject value, IRubyObject self, RubyModule klass, boolean argIsArray, Binding binding, Type type) {
+    protected IRubyObject doYield(ThreadContext context, IRubyObject value, IRubyObject self, RubyModule klass, boolean argIsArray, Binding binding, Type type) {
 		// Unwrap the array arg
         IRubyObject[] args;
         if (type == Block.Type.LAMBDA) {

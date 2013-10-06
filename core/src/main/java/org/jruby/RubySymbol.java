@@ -457,12 +457,12 @@ public class RubySymbol extends RubyObject implements MarshalEncoding {
             }
             
             @Override
-            public IRubyObject yield(ThreadContext context, IRubyObject value, Binding binding, Type type) {
+            protected IRubyObject doYield(ThreadContext context, IRubyObject value, Binding binding, Type type) {
                 return yieldInner(context, ArgsUtil.convertToRubyArray(context.runtime, value, false), Block.NULL_BLOCK);
             }
 
             @Override
-            public IRubyObject yield(ThreadContext context, IRubyObject value, IRubyObject self, RubyModule klass, boolean aValue, Binding binding, Type type) {
+            protected IRubyObject doYield(ThreadContext context, IRubyObject value, IRubyObject self, RubyModule klass, boolean aValue, Binding binding, Type type) {
                 RubyArray array = aValue && value instanceof RubyArray ?
                         (RubyArray) value : ArgsUtil.convertToRubyArray(context.runtime, value, false);
 

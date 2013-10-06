@@ -228,11 +228,32 @@ public class RubyProc extends RubyObject implements DataType {
         return call(context, args, null, Block.NULL_BLOCK);
     }
 
+    public static IRubyObject prepareArgs(ThreadContext context, Block.Type type, Arity arity, IRubyObject value) {
+        if (arity == null || !(value instanceof RubyArray)) {
+            return value;
+        }
+
+        IRubyObject[] preppedArgs = prepareArgs(context, type, arity, value.convertToArray().toJavaArray());
+        if (preppedArgs.length == 1) {
+            return preppedArgs[0];
+        }
+        return RubyArray.newArrayNoCopyLight(context.runtime, preppedArgs);
+    }
+
     /**
      * Transforms the given arguments appropriately for the given arity (i.e. trimming to one arg for fixed
      * arity of one, etc.)
      */
-    public static IRubyObject[] prepareProcArgs(ThreadContext context, Arity arity, IRubyObject[] args) {
+    public static IRubyObject[] prepareArgs(ThreadContext context, Block.Type type, Arity arity, IRubyObject[] args) {
+        if (type == Block.Type.LAMBDA) {
+            arity.checkArity(context.runtime, args.length);
+            return args;
+        }
+
+        if (type == Block.Type.THREAD) {
+            return args;
+        }
+
         boolean isFixed = arity.isFixed();
         int required = arity.required();
         int actual = args.length;
@@ -263,12 +284,8 @@ public class RubyProc extends RubyObject implements DataType {
 
     @JRubyMethod(name = {"call", "[]", "yield", "==="}, rest = true, compat = RUBY1_9)
     public IRubyObject call19(ThreadContext context, IRubyObject[] args, Block blockCallArg) {
-        if (isLambda()) {
-            block.arity().checkArity(context.runtime, args.length);
-        }
-        if (isProc()) args = prepareProcArgs(context, block.arity(), args);
-
-        return call(context, args, null, blockCallArg);
+        IRubyObject[] preppedArgs = prepareArgs(context, type, block.arity(), args);
+        return call(context, preppedArgs, null, blockCallArg);
     }
 
     public IRubyObject call(ThreadContext context, IRubyObject[] args, IRubyObject self, Block passedBlock) {

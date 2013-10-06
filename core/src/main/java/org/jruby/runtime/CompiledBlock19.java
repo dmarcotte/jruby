@@ -124,7 +124,7 @@ public class CompiledBlock19 extends ContextAwareBlockBody {
     }
 
     @Override
-    public IRubyObject yield(ThreadContext context, IRubyObject value, Binding binding, Block.Type type) {
+    protected IRubyObject doYield(ThreadContext context, IRubyObject value, Binding binding, Block.Type type) {
         IRubyObject self = prepareSelf(binding);
 
         Visibility oldVis = binding.getFrame().getVisibility();
@@ -141,7 +141,8 @@ public class CompiledBlock19 extends ContextAwareBlockBody {
         }
     }
 
-    public IRubyObject yield(ThreadContext context, IRubyObject args, IRubyObject self, RubyModule klass, boolean aValue, Binding binding, Block.Type type) {
+    @Override
+    protected IRubyObject doYield(ThreadContext context, IRubyObject args, IRubyObject self, RubyModule klass, boolean aValue, Binding binding, Block.Type type) {
         return yield(context, args, self, klass, aValue, binding, type, Block.NULL_BLOCK);
     }
     

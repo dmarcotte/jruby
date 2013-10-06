@@ -145,7 +145,8 @@ public class Interpreted19Block  extends ContextAwareBlockBody {
         return yield(context, context.runtime.newArrayNoCopyLight(arg0, arg1, arg2), null, null, ALREADY_ARRAY, binding, type);
     }
 
-    public IRubyObject yield(ThreadContext context, IRubyObject value, Binding binding, Block.Type type) {
+    @Override
+    protected IRubyObject doYield(ThreadContext context, IRubyObject value, Binding binding, Block.Type type) {
         IRubyObject self = prepareSelf(binding);
 
         Visibility oldVis = binding.getFrame().getVisibility();
@@ -172,11 +173,13 @@ public class Interpreted19Block  extends ContextAwareBlockBody {
      * @param aValue Should value be arrayified or not?
      * @return
      */
-    public IRubyObject yield(ThreadContext context, IRubyObject value, IRubyObject self,
+    @Override
+    protected IRubyObject doYield(ThreadContext context, IRubyObject value, IRubyObject self,
             RubyModule klass, boolean aValue, Binding binding, Block.Type type) {
         return yield(context, value, self, klass, aValue, binding, type, Block.NULL_BLOCK);
 
     }
+
     @Override
     public IRubyObject yield(ThreadContext context, IRubyObject value, IRubyObject self,
             RubyModule klass, boolean aValue, Binding binding, Block.Type type, Block block) {

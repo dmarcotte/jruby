@@ -118,7 +118,7 @@ public abstract class MethodBlock extends ContextAwareBlockBody {
     }
     
     @Override
-    public IRubyObject yield(ThreadContext context, IRubyObject value, Binding binding, Block.Type type) {
+    protected IRubyObject doYield(ThreadContext context, IRubyObject value, Binding binding, Block.Type type) {
         return yield(context, value, null, null, false, binding, type);
     }
 
@@ -128,7 +128,7 @@ public abstract class MethodBlock extends ContextAwareBlockBody {
     }
 
     @Override
-    public IRubyObject yield(ThreadContext context, IRubyObject value, IRubyObject self,
+    protected IRubyObject doYield(ThreadContext context, IRubyObject value, IRubyObject self,
                              RubyModule klass, boolean aValue, Binding binding, Block.Type type) {
         return yield(context, value, self, klass, aValue, binding, type, Block.NULL_BLOCK);
     }
