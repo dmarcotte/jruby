@@ -308,7 +308,8 @@ public class InterpretedBlock extends ContextAwareBlockBody {
         }
     }
 
-    public IRubyObject yield(ThreadContext context, IRubyObject value, Binding binding, Block.Type type) {
+    @Override
+    protected IRubyObject doYield(ThreadContext context, IRubyObject value, Binding binding, Block.Type type) {
         return yield(context, value, binding, type, Block.NULL_BLOCK);
 
     }
@@ -372,7 +373,8 @@ public class InterpretedBlock extends ContextAwareBlockBody {
      * @param alreadyArray do we need an array or should we assume it already is one?
      * @return result of block invocation
      */
-    public IRubyObject yield(ThreadContext context, IRubyObject value, IRubyObject self, 
+    @Override
+    protected IRubyObject doYield(ThreadContext context, IRubyObject value, IRubyObject self,
             RubyModule klass, boolean alreadyArray, Binding binding, Block.Type type) {
         return yield(context, value, self, klass, alreadyArray, binding, type, Block.NULL_BLOCK);
     }

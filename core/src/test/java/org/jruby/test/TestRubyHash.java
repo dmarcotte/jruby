@@ -31,10 +31,7 @@
 package org.jruby.test;
 
 import org.jruby.Ruby;
-import org.jruby.RubyFixnum;
 import org.jruby.RubyHash;
-import org.jruby.RubySymbol;
-import org.jruby.exceptions.RaiseException;
 
 /**
  * @author chadfowler
@@ -58,7 +55,7 @@ public class TestRubyHash extends TestRubyBase {
      * without the optional default-value argument.
      */
     public void testConstructors() throws Exception {
-        result = eval("hash = {'a', 100}; p hash");
+        result = eval("hash = {'a' => 100}; p hash");
         assertEquals("{\"a\"=>100}", result);
         result = eval("hash = Hash['b', 200]; p hash");
         assertEquals("{\"b\"=>200}", result);
@@ -98,7 +95,7 @@ public class TestRubyHash extends TestRubyBase {
      */
     public void testConversions() throws Exception {
         result = eval("p $h.to_s");
-        assertEquals("\"foobar\"", result);
+        assertEquals("\"{\\\"foo\\\"=>\\\"bar\\\"}\"", result);
         result = eval("p $h.to_a");
         assertEquals("[[\"foo\", \"bar\"]]", result);
         result = eval("p $h.to_hash");
