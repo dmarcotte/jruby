@@ -27,40 +27,22 @@
  ***** END LICENSE BLOCK *****/
 package org.jruby;
 
-import org.jruby.runtime.ivars.VariableAccessor;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.jruby.anno.JRubyMethod;
 import org.jruby.common.IRubyWarnings.ID;
 import org.jruby.evaluator.ASTInterpreter;
 import org.jruby.exceptions.JumpException;
+import org.jruby.exceptions.RaiseException;
 import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.javasupport.JavaObject;
 import org.jruby.javasupport.JavaUtil;
-import org.jruby.runtime.Helpers;
-import org.jruby.runtime.Block;
-import org.jruby.runtime.CallType;
-import org.jruby.runtime.ClassIndex;
-import org.jruby.runtime.ObjectAllocator;
-import org.jruby.runtime.ThreadContext;
-import org.jruby.runtime.Visibility;
-import static org.jruby.runtime.Visibility.*;
-import static org.jruby.CompatVersion.*;
-import org.jruby.exceptions.RaiseException;
+import org.jruby.runtime.*;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.builtin.InstanceVariables;
 import org.jruby.runtime.builtin.InternalVariables;
 import org.jruby.runtime.builtin.Variable;
 import org.jruby.runtime.component.VariableEntry;
+import org.jruby.runtime.ivars.VariableAccessor;
+import org.jruby.runtime.ivars.VariableTableManager;
 import org.jruby.runtime.marshal.CoreObjectType;
 import org.jruby.util.IdUtil;
 import org.jruby.util.TypeConverter;
@@ -68,12 +50,18 @@ import org.jruby.util.log.Logger;
 import org.jruby.util.log.LoggerFactory;
 import org.jruby.util.unsafe.UnsafeHolder;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.jruby.CompatVersion.RUBY1_9;
 import static org.jruby.runtime.Helpers.invokedynamic;
-import static org.jruby.runtime.invokedynamic.MethodNames.OP_EQUAL;
-import static org.jruby.runtime.invokedynamic.MethodNames.OP_CMP;
-import static org.jruby.runtime.invokedynamic.MethodNames.EQL;
-import static org.jruby.runtime.invokedynamic.MethodNames.INSPECT;
-import org.jruby.runtime.ivars.VariableTableManager;
+import static org.jruby.runtime.Visibility.PRIVATE;
+import static org.jruby.runtime.Visibility.PUBLIC;
+import static org.jruby.runtime.invokedynamic.MethodNames.*;
 
 /**
  * RubyBasicObject is the only implementation of the
@@ -1584,13 +1572,14 @@ public class RubyBasicObject implements Cloneable, IRubyObject, Serializable, Co
         block.getBinding().setVisibility(PUBLIC);
 
         try {
-            if (args.length == 1) {
-                IRubyObject valueInYield = args[0];
-                return setupBlock(block).yieldNonArray(context, valueInYield, this, context.getRubyClass());
-            } else {
+            // dm todo safe to skip this?  Also: does this mean we can delete some aValue stuff?
+//            if (args.length == 1) {
+//                IRubyObject valueInYield = args[0];
+//                return setupBlock(block).yieldNonArray(context, valueInYield, this, context.getRubyClass());
+//            } else {
                 IRubyObject valueInYield = RubyArray.newArrayNoCopy(context.runtime, args);
                 return setupBlock(block).yieldArray(context, valueInYield, this, context.getRubyClass());
-            }
+//            }
             //TODO: Should next and return also catch here?
         } catch (JumpException.BreakJump bj) {
             return (IRubyObject) bj.getValue();

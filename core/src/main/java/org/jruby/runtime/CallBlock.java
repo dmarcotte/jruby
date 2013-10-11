@@ -83,6 +83,7 @@ public class CallBlock extends BlockBody {
     @Override
     protected IRubyObject doYield(ThreadContext context, IRubyObject value, IRubyObject self,
             RubyModule klass, boolean aValue, Binding binding, Block.Type type) {
+        // dm todo revert to aValue check?
         IRubyObject[] args = value.respondsTo("to_a") ? value.convertToArray().toJavaArray() : new IRubyObject[] {value};
         return callback.call(context, args, Block.NULL_BLOCK);
     }
