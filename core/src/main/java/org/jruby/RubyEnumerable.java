@@ -134,17 +134,22 @@ public class RubyEnumerable {
     public static IRubyObject count(ThreadContext context, IRubyObject self, final Block block) {
         final Ruby runtime = context.runtime;
         final int result[] = new int[] { 0 };
-        
+
         if (block.isGiven()) {
-            each(context, self, new JavaInternalBlockBody(runtime, context, "Enumerable#count", Arity.OPTIONAL) {
-                public IRubyObject yield(ThreadContext context, IRubyObject arg) {
-                    if (block.yield(context, arg).isTrue()) result[0]++; 
+            callEach(runtime, context, self, block.arity(), new BlockCallback() {
+                @Override
+                public IRubyObject call(ThreadContext context, IRubyObject[] args, Block blk) {
+                    IRubyObject arg = packEnumValues(runtime, args);
+                    if (block.yield(context, arg).isTrue()) {
+                        result[0]++;
+                    }
                     return runtime.getNil();
                 }
             });
         } else {
-            each(context, self, new JavaInternalBlockBody(runtime, context, "Enumerable#count", Arity.NO_ARGUMENTS) {
-                public IRubyObject yield(ThreadContext context, IRubyObject unusedValue) {
+            callEach(runtime, context, self, Arity.ONE_REQUIRED, new BlockCallback() {
+                @Override
+                public IRubyObject call(ThreadContext context, IRubyObject[] args, Block blk) {
                     result[0]++;
                     return runtime.getNil();
                 }
@@ -1442,16 +1447,24 @@ public class RubyEnumerable {
 
         try {
             if (block.isGiven()) {
-                each(context, self, new JavaInternalBlockBody(runtime, context, "Enumerable#any?", block.arity()) {
-                    public IRubyObject yield(ThreadContext context, IRubyObject arg) {
-                        if (block.yield(context, arg).isTrue()) throw JumpException.SPECIAL_JUMP;
+                callEach(runtime, context, self, block.arity(), new BlockCallback() {
+                    @Override
+                    public IRubyObject call(ThreadContext context, IRubyObject[] args, Block blk) {
+                        IRubyObject arg = packEnumValues(runtime, args);
+                        if (block.yield(context, arg).isTrue()) {
+                            throw JumpException.SPECIAL_JUMP;
+                        }
                         return runtime.getNil();
                     }
                 });
             } else {
-                each(context, self, new JavaInternalBlockBody(runtime, context, "Enumerable#any?", Arity.ONE_REQUIRED) {
-                    public IRubyObject yield(ThreadContext context, IRubyObject arg) {
-                        if (arg.isTrue()) throw JumpException.SPECIAL_JUMP;
+                callEach(runtime, context, self, Arity.ONE_REQUIRED, new BlockCallback() {
+                    @Override
+                    public IRubyObject call(ThreadContext context, IRubyObject[] args, Block blk) {
+                        IRubyObject arg = packEnumValues(runtime, args);
+                        if (arg.isTrue()) {
+                            throw JumpException.SPECIAL_JUMP;
+                        }
                         return runtime.getNil();
                     }
                 });
