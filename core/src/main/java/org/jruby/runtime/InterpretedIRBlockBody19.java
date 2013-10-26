@@ -124,15 +124,7 @@ public class InterpretedIRBlockBody19 extends InterpretedIRBlockBody {
 
     @Override
     protected IRubyObject doYield(ThreadContext context, IRubyObject[] args, IRubyObject self, RubyModule klass, boolean argIsArray, Binding binding, Type type) {
-		// Unwrap the array arg
-        IRubyObject[] newArgs;
-        if (type == Block.Type.LAMBDA) {
-            newArgs = (args == null) ? IRubyObject.NULL_ARRAY : args;
-            arity().checkArity(context.runtime, args);
-        } else {
-            newArgs = (args == null) ? IRubyObject.NULL_ARRAY : args;
-        }
-        return commonYieldPath(context, newArgs, self, klass, binding, type, Block.NULL_BLOCK);
+        return commonYieldPath(context, args, self, klass, binding, type, Block.NULL_BLOCK);
     }
 
     @Override

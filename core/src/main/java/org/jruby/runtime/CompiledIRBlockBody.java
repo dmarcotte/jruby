@@ -128,14 +128,6 @@ public class CompiledIRBlockBody extends ContextAwareBlockBody {
 
     @Override
     protected IRubyObject doYield(ThreadContext context, IRubyObject[] args, IRubyObject self, RubyModule klass, boolean argIsArray, Binding binding, Type type) {
-        if (args == null) {
-            args = IRubyObject.NULL_ARRAY;
-        }
-
-        if (type == Block.Type.LAMBDA) {
-            arity().checkArity(context.runtime, args);
-        }
-
         return commonYieldPath(context, args, self, klass, binding, type, Block.NULL_BLOCK);
     }
 
