@@ -106,7 +106,7 @@ public class CompiledIRBlockBody extends ContextAwareBlockBody {
     }
 
     @Override
-    public IRubyObject yield(ThreadContext context, IRubyObject value, Binding binding, Type type) {
+    public IRubyObject doYield(ThreadContext context, IRubyObject value, Binding binding, Type type) {
         IRubyObject[] args;
         if (type == Block.Type.LAMBDA) {
             args = new IRubyObject[] { value };
@@ -127,7 +127,7 @@ public class CompiledIRBlockBody extends ContextAwareBlockBody {
     }
 
     @Override
-    public IRubyObject yield(ThreadContext context, IRubyObject[] args, IRubyObject self, RubyModule klass, boolean argIsArray, Binding binding, Type type) {
+    protected IRubyObject doYield(ThreadContext context, IRubyObject[] args, IRubyObject self, RubyModule klass, boolean argIsArray, Binding binding, Type type) {
         if (args == null) {
             args = IRubyObject.NULL_ARRAY;
         }
