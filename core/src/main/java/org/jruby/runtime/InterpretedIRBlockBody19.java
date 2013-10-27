@@ -123,7 +123,7 @@ public class InterpretedIRBlockBody19 extends InterpretedIRBlockBody {
     }
 
     @Override
-    protected IRubyObject doYield(ThreadContext context, IRubyObject[] args, IRubyObject self, RubyModule klass, boolean argIsArray, Binding binding, Type type) {
+    protected IRubyObject doYield(ThreadContext context, IRubyObject[] args, IRubyObject self, RubyModule klass, Binding binding, Type type) {
         return commonYieldPath(context, args, self, klass, binding, type, Block.NULL_BLOCK);
     }
 
