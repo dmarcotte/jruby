@@ -310,7 +310,7 @@ public class InterpretedBlock extends ContextAwareBlockBody {
     }
 
     @Override
-    public IRubyObject yield(ThreadContext context, IRubyObject value, Binding binding, Block.Type type) {
+    protected IRubyObject doYield(ThreadContext context, IRubyObject value, Binding binding, Block.Type type) {
         return yield(context, value, binding, type, Block.NULL_BLOCK);
 
     }
@@ -328,7 +328,8 @@ public class InterpretedBlock extends ContextAwareBlockBody {
 
         try {
             if (!noargblock) {
-                RubyArray argArray = context.runtime.newArrayNoCopyLight(args);
+                IRubyObject[] preppedArgs = prepareArgs(context, type, arity, args);
+                RubyArray argArray = context.runtime.newArrayNoCopyLight(preppedArgs);
                 IRubyObject values = alreadyArray ? assigner.convertIfAlreadyArray(runtime, argArray) :
                     assigner.convertToArray(runtime, argArray);
 
@@ -376,7 +377,7 @@ public class InterpretedBlock extends ContextAwareBlockBody {
      * @return result of block invocation
      */
     @Override
-    public IRubyObject yield(ThreadContext context, IRubyObject[] args, IRubyObject self,
+    protected IRubyObject doYield(ThreadContext context, IRubyObject[] args, IRubyObject self,
             RubyModule klass, boolean alreadyArray, Binding binding, Block.Type type) {
         return yield(context, args, self, klass, alreadyArray, binding, type, Block.NULL_BLOCK);
     }

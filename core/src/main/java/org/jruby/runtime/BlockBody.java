@@ -42,6 +42,8 @@ import org.jruby.common.IRubyWarnings.ID;
 import org.jruby.parser.StaticScope;
 import org.jruby.runtime.builtin.IRubyObject;
 
+import java.util.Arrays;
+
 /**
  * The executable body portion of a closure.
  */
@@ -73,10 +75,32 @@ public abstract class BlockBody {
         return yield(context, args, null, null, true, binding, type, block);
     }
 
-    public abstract IRubyObject yield(ThreadContext context, IRubyObject value, Binding binding, Block.Type type);
+    public final IRubyObject yield(ThreadContext context, IRubyObject value, Binding binding, Block.Type type) {
+        return doYield(context, value, binding, type);
+    }
 
-    public abstract IRubyObject yield(ThreadContext context, IRubyObject[] args, IRubyObject self,
-                                      RubyModule klass, boolean aValue, Binding binding, Block.Type type);
+    public final IRubyObject yield(ThreadContext context, IRubyObject[] args, IRubyObject self,
+                                   RubyModule klass, boolean aValue, Binding binding, Block.Type type) {
+        IRubyObject[] preppedValue = prepareArgs(context, type, arity(), args);
+        return doYield(context, preppedValue, self, klass, aValue, binding, type);
+    }
+
+    /**
+     * Subclass specific yield implementation.
+     * <p>
+     * Should not be called directly. Gets called by {@link #yield(ThreadContext, IRubyObject, Binding, Block.Type)}
+     * after ensuring that any common yield logic is taken care of.
+     */
+    protected abstract IRubyObject doYield(ThreadContext context, IRubyObject value, Binding binding, Block.Type type);
+
+    /**
+     * Subclass specific yield implementation.
+     * <p>
+     * Should not be called directly. Gets called by {@link #yield(ThreadContext, IRubyObject[], IRubyObject, RubyModule, boolean, Binding, Block.Type)}
+     * after ensuring that all common yield logic is taken care of.
+     */
+    protected abstract IRubyObject doYield(ThreadContext context, IRubyObject[] args, IRubyObject self,
+                                           RubyModule klass, boolean aValue, Binding binding, Block.Type type);
 
     // FIXME: This should replace blockless abstract versions of yield above and become abstract.
     // Here to allow incremental replacement. Overriden by subclasses which support it.
@@ -202,6 +226,59 @@ public abstract class BlockBody {
         return ARRAY;
     }
 
+    /**
+     * For Type.LAMBDA, ensures that the args have the correct arity.
+     *
+     * For others, transforms the given arguments appropriately for the given arity (i.e. trimming to one arg for fixed
+     * arity of one, etc.)
+     *
+     * FIXME this should be rectified/combined with {@link #prepareArgumentsForCall}
+     */
+    protected static IRubyObject[] prepareArgs(ThreadContext context, Block.Type type, Arity arity, IRubyObject[] args) {
+        if (arity == null) {
+            return args;
+        }
+
+        if (args == null) {
+            return IRubyObject.NULL_ARRAY;
+        }
+
+        if (type == Block.Type.LAMBDA) {
+            arity.checkArity(context.runtime, args.length);
+            return args;
+        }
+
+        boolean isFixed = arity.isFixed();
+        int required = arity.required();
+        int actual = args.length;
+
+        // for procs and blocks, single array passed to multi-arg must be spread
+        if (arity != Arity.ONE_ARGUMENT &&  required != 0 &&
+                (isFixed || arity != Arity.OPTIONAL) &&
+                actual == 1 && args[0].respondsTo("to_ary")) {
+            args = args[0].convertToArray().toJavaArray();
+            actual = args.length;
+        }
+
+        // fixed arity > 0 with mismatch needs a new args array
+        if (isFixed && required > 0 && required != actual) {
+
+            IRubyObject[] newArgs = Arrays.copyOf(args, required);
+
+            // pad with nil
+            if (required > actual) {
+                Helpers.fillNil(newArgs, actual, required, context.runtime);
+            }
+
+            args = newArgs;
+        }
+
+        return args;
+    }
+
+    /**
+     * FIXME this should be rectified/combined with {@link #prepareArgs}
+     */
     public IRubyObject[] prepareArgumentsForCall(ThreadContext context, IRubyObject[] args, Block.Type type) {
         switch (type) {
         case NORMAL: {

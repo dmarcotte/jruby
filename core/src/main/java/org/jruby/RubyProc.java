@@ -39,7 +39,6 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.exceptions.JumpException;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.jruby.parser.StaticScope;
-import org.jruby.runtime.Arity;
 import org.jruby.runtime.Binding;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.BlockBody;
@@ -50,8 +49,6 @@ import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.marshal.DataType;
-
-import java.util.Arrays;
 
 import static org.jruby.CompatVersion.RUBY1_8;
 import static org.jruby.CompatVersion.RUBY1_9;
@@ -228,46 +225,8 @@ public class RubyProc extends RubyObject implements DataType {
         return call(context, args, null, Block.NULL_BLOCK);
     }
 
-    /**
-     * Transforms the given arguments appropriately for the given arity (i.e. trimming to one arg for fixed
-     * arity of one, etc.)
-     */
-    public static IRubyObject[] prepareProcArgs(ThreadContext context, Arity arity, IRubyObject[] args) {
-        boolean isFixed = arity.isFixed();
-        int required = arity.required();
-        int actual = args.length;
-        
-        // for procs and blocks, single array passed to multi-arg must be spread
-        if (arity != Arity.ONE_ARGUMENT &&  required != 0 && 
-                (isFixed || arity != Arity.OPTIONAL) &&
-                actual == 1 && args[0].respondsTo("to_ary")) {
-            args = args[0].convertToArray().toJavaArray();
-            actual = args.length;
-        }
-        
-        // fixed arity > 0 with mismatch needs a new args array
-        if (isFixed && required > 0 && required != actual) {
-            
-            IRubyObject[] newArgs = Arrays.copyOf(args, required);
-            
-            // pad with nil
-            if (required > actual) {
-                Helpers.fillNil(newArgs, actual, required, context.runtime);
-            }
-            
-            args = newArgs;
-        }
-
-        return args;
-    }
-
     @JRubyMethod(name = {"call", "[]", "yield", "==="}, rest = true, compat = RUBY1_9)
     public IRubyObject call19(ThreadContext context, IRubyObject[] args, Block blockCallArg) {
-        if (isLambda()) {
-            block.arity().checkArity(context.runtime, args.length);
-        }
-        if (isProc()) args = prepareProcArgs(context, block.arity(), args);
-
         return call(context, args, null, blockCallArg);
     }
 
