@@ -2216,7 +2216,10 @@ public class Helpers {
                 break;
         }
         setAritiesFromDecodedScope(scope, decodedScope[0]);
-        scope.setScopeType(IRScopeType.valueOf(decodedScope[0][5]));
+        String irScope = decodedScope[0][5];
+        if (!irScope.equals("null")) {
+            scope.setScopeType(IRScopeType.valueOf(irScope));
+        }
         return scope;
     }
 
